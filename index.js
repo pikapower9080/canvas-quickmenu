@@ -62,7 +62,7 @@ qm.css = `
 qm.html = `
     <div id="quick-menu-overlay"></div>
     <div id="quick-menu">
-        <input type="text" id="quick-menu-input" placeholder="Search Anything...">
+        <input type="text" id="quick-menu-input" placeholder="Search Anything..." autocomplete="off">
         <input type="submit" style="display: none;">
         <div id="results">
             <template class="result" id="result-template">
@@ -99,7 +99,8 @@ document.head.appendChild(qm.fuseScript)
 
 function setupKeybind() {
     qm.fuse = new Fuse(qm.items, {
-        keys: ["title", "name"]
+        keys: ["title", "name", "aka"],
+        threshold: 0.4
     })
     addEventListener("keydown", (e) => {
         if ((e.key == "P" && e.ctrlKey) || (e.key == "Escape" && qm.container.style.display == "none")) {
@@ -137,18 +138,19 @@ function setupKeybind() {
             window.location.href = qm.results.querySelector(".result").dataset.href
         }
     })
+    console.log("%cCanvas quick menu is now ready!", "font-size: 16px;")
 }
 
 
 qm.items = []
 qm.actions = [
-    {name: "Inbox", url: "/conversations", icon:"inbox"},
-    {name: "Dashboard", url: "/", icon:"home"},
+    {name: "Inbox", url: "/conversations", icon:"inbox", aka: "New Message"},
+    {name: "Dashboard", url: "/", icon:"home", aka: "Home"},
     {name: "Calendar", url: "/calendar", icon:"calendar-month"},
     {name: "Grades", url: "/grades", icon:"star-light"},
-    {name: "Settings", url: "/profile/settings", icon:"settings"},
+    {name: "Settings", url: "/profile/settings", icon:"settings", aka: "Account"},
     {name: "Files", url: "/files", icon:"folder"},
-    {name: "All Courses", url: "/courses", icon:"courses"},
+    {name: "All Courses", url: "/courses", icon:"courses", aka: "Subjects"},
     {name: "Schedule", url: "/#schedule", icon:"calendar-month"}
 ]
 qm.actions.forEach((action) => {
