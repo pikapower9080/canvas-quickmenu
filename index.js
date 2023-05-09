@@ -7,6 +7,7 @@
 // @match        https://hcpss.instructure.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=hcpss.instructure.com
 // @grant        none
+// @noframes
 // ==/UserScript==
 
 let qm = {}
@@ -54,6 +55,7 @@ qm.css = `
 #quick-menu .result {
     padding: 3px;
     border-bottom: 1px solid black;
+    cursor: pointer;
 }
 `
 
@@ -84,7 +86,9 @@ qm.container.style.display = "none"
 
 qm.input = qm.container.querySelector("input#quick-menu-input")
 qm.input.addEventListener("blur", () => {
-    qm.container.style.display = "none"
+    setTimeout(() => {
+        qm.container.style.display = "none"
+    }, 50)
 })
 qm.resultTemplate = qm.container.querySelector("#result-template")
 qm.results = qm.container.querySelector("#results")
@@ -110,38 +114,75 @@ function setupKeybind() {
     })
     qm.input.addEventListener("input", () => {
         qm.results.querySelectorAll(".result").forEach(r => r.remove())
-        qm.fuse.search(qm.input.value).forEach((item) => {
+        qm.fuse.search(qm.input.value).slice(0, 5).forEach((item) => {
             const clone = qm.resultTemplate.content.cloneNode(true)
-            clone.querySelector(".mainText").innerText = item.item.name || item.item.title
+            const realClone = clone.querySelector("*")
+            const mainText = clone.querySelector(".mainText")
+            mainText.innerText = item.item.name || item.item.title
+            if (item.item["url"]) {
+                realClone.dataset.href = item.item.url
+            }
+            if (item.item["course_code"]) {
+                realClone.dataset.href = `/courses/${item.item.id}`
+            }
+            if (item.item["icon"]) {
+                mainText.innerHTML = `<i class="icon-${item.item.icon}" style="margin-right: 5px;"></i>${mainText.innerText}`
+            }
             qm.results.appendChild(clone)
         })
+    })
+    qm.input.addEventListener("keydown", (e) => {
+        if (e.key == "Enter" && qm.container.style.display == "unset") {
+            e.preventDefault()
+            window.location.href = qm.results.querySelector(".result").dataset.href
+        }
     })
 }
 
 
 qm.items = []
+qm.actions = [
+    {name: "Inbox", url: "/conversations", icon:"inbox"},
+    {name: "Dashboard", url: "/", icon:"home"},
+    {name: "Calendar", url: "/calendar", icon:"calendar-month"},
+    {name: "Grades", url: "/grades", icon:"star-light"},
+    {name: "Settings", url: "/profile/settings", icon:"settings"},
+    {name: "Files", url: "/files", icon:"folder"},
+    {name: "All Courses", url: "/courses", icon:"courses"},
+    {name: "Schedule", url: "/#schedule", icon:"calendar-month"}
+]
+qm.actions.forEach((action) => {
+    qm.items.push(action)
+})
 
-fetch("https://hcpss.instructure.com/api/v1/users/self/favorites/courses?include[]=banner_image", {}).then((res) => {
-    res.json().then((json) => {
-        json.forEach((course) => {
-            qm.items.push(course)
+qm.fuseScript.addEventListener("load", () => {
+    fetch("https://hcpss.instructure.com/api/v1/users/self/favorites/courses?include[]=banner_image", {}).then((res) => {
+        res.json().then((json) => {
+            json.forEach((course) => {
+                let newCourse = course
+                newCourse.icon = "courses"
+                newCourse.name = course.name.trim()
+                qm.items.push(newCourse)
+            })
+            fetch("https://hcpss.instructure.com/api/v1/users/self/todo?per_page=100", {}).then((res) => {
+                res.json().then((todo) => {
+                    todo.forEach((assignment) => {
+                        qm.items.push({name: assignment.assignment.name, url: assignment.assignment.html_url, icon: assignment.assignment.is_quiz_assignment? "quiz" : "assignment"})
+                    })
+                    let contextCodes = ""
+                    json.forEach((course) => {
+                        contextCodes += `&context_codes[]=course_${course.id}`
+                    })
+                    fetch("/api/v1/announcements?per_page=100&latest_only=true" + contextCodes, {}).then((res) => {
+                        res.json().then((announcements) => {
+                            announcements.forEach((announcement) => {
+                                qm.items.push({name: announcement.title, url: announcement.html_url, icon:"announcement"})
+                            })
+                            setupKeybind()
+                        })
+                    })
+                })
+            })
         })
-        setupKeybind()
     })
 })
-/* 
-{
-    "id": 12117972,
-    "title": "U6L4- Board Events",
-    "position": 3,
-    "indent": 2,
-    "quiz_lti": false,
-    "type": "Assignment",
-    "module_id": 1360071,
-    "html_url": "https://hcpss.instructure.com/courses/185913/modules/items/12117972",
-    "content_id": 8827977,
-    "url": "https://hcpss.instructure.com/api/v1/courses/185913/assignments/8827977",
-    "course_id": 185913,
-    "course_name": "Computer Science"
-}
-*/
