@@ -52,6 +52,10 @@ qm.css = `
     border-bottom: none;
     width: calc(300px + 8px);
 }
+#quick-menu #results:last-child {
+    border-bottom-left-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
 #quick-menu .result {
     padding: 3px;
     border-bottom: 1px solid black;
@@ -152,7 +156,7 @@ qm.actions = [
     {name: "Files", url: "/files", icon:"folder"},
     {name: "All Courses", url: "/courses", icon:"courses", aka: "Subjects"},
     {name: "Schedule", url: "/#schedule", icon:"calendar-month"},
-    {name: "Documentation", url: "/doc/api/", icon:"code"}
+    {name: "API Documentation", url: "/doc/api/", icon:"code"}
 ]
 qm.actions.forEach((action) => {
     qm.items.push(action)
