@@ -12,9 +12,6 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
-      - name: Minify Action
-        uses: anthonyftwang/minify-action@v1.0.1
-        
       - name: Deploy to Gist
         uses: exuanbo/actions-deploy-gist@v1
         with:
