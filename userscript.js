@@ -10,7 +10,7 @@
 // @noframes
 // ==/UserScript==
 
-const fetchUrl = "https://gist.githubusercontent.com/pikapower9080/4b60adb4a04a11e20134ae0b756d66c4/raw/8a8a41b73c38450e9f70206081644a1c86b574d8/index.js"
+const fetchUrl = "https://gist.githubusercontent.com/pikapower9080/4b60adb4a04a11e20134ae0b756d66c4/raw/index.js"
 let cache = sessionStorage.getItem("qm-cache")
 
 if (!cache) {
