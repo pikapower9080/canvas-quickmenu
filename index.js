@@ -156,7 +156,8 @@ qm.actions = [
     {name: "Files", url: "/files", icon:"folder"},
     {name: "All Courses", url: "/courses", icon:"courses", aka: "Subjects"},
     {name: "Schedule", url: "/#schedule", icon:"calendar-month"},
-    {name: "API Documentation", url: "/doc/api/", icon:"code", aka:"Hacker"}
+    {name: "API Documentation", url: "/doc/api/", icon:"code", aka:"Hacker"},
+    {name: "Global Announcments", url: "/account_notifications", icon:"alerts"}
 ]
 qm.actions.forEach((action) => {
     qm.items.push(action)
