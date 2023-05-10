@@ -158,7 +158,8 @@ qm.actions = [
     {name: "Schedule", url: "/#schedule", icon:"calendar-month"},
     {name: "API Documentation", url: "/doc/api/", icon:"code", aka:"Hacker"},
     {name: "Global Announcments", url: "/account_notifications", icon:"alerts"},
-    {name: "ePortfolios", url: "/dashboard/eportfolios", icon:"bank"}
+    {name: "ePortfolios", url: "/dashboard/eportfolios", icon:"bank"},
+    {name: "Studio", url: "/accounts/1/external_tools/55733?launch_type=global_navigation", icon:"studio"}
 ]
 qm.actions.forEach((action) => {
     qm.items.push(action)
