@@ -179,35 +179,44 @@ qm.actions.forEach((action) => {
 })
 
 qm.fuseScript.addEventListener("load", () => {
-    fetch("https://hcpss.instructure.com/api/v1/users/self/favorites/courses?include[]=banner_image", {}).then((res) => {
-        res.json().then((json) => {
-            json.forEach((course) => {
-                let newCourse = course
-                newCourse.icon = "courses"
-                newCourse.name = course.name.trim()
-                qm.items.push(newCourse)
-            })
-            fetch("https://hcpss.instructure.com/api/v1/users/self/todo?per_page=100", {}).then((res) => {
-                res.json().then((todo) => {
-                    todo.forEach((assignment) => {
-                        qm.items.push({name: assignment.assignment.name, url: assignment.assignment.html_url, icon: assignment.assignment.is_quiz_assignment? "quiz" : "assignment"})
-                    })
-                    let contextCodes = ""
-                    json.forEach((course) => {
-                        contextCodes += `&context_codes[]=course_${course.id}`
-                    })
-                    fetch("/api/v1/announcements?per_page=100&latest_only=true" + contextCodes, {}).then((res) => {
-                        res.json().then((announcements) => {
-                            announcements.forEach((announcement) => {
-                                qm.items.push({name: announcement.title, url: announcement.html_url, icon:"announcement"})
+    if (sessionStorage.getItem("qm-itemCache")) {
+        qm.items = JSON.parse(sessionStorage.getItem("qm-itemCache"));
+        console.log("Loaded quick search item cache from session storage");
+        setupKeybind();
+    } else {
+        fetch("https://hcpss.instructure.com/api/v1/users/self/favorites/courses?include[]=banner_image", {}).then((res) => {
+            res.json().then((json) => {
+                json.forEach((course) => {
+                    let newCourse = course
+                    newCourse.icon = "courses"
+                    newCourse.name = course.name.trim()
+                    qm.items.push(newCourse)
+                })
+                fetch("https://hcpss.instructure.com/api/v1/users/self/todo?per_page=100", {}).then((res) => {
+                    res.json().then((todo) => {
+                        todo.forEach((assignment) => {
+                            qm.items.push({name: assignment.assignment.name, url: assignment.assignment.html_url, icon: assignment.assignment.is_quiz_assignment? "quiz" : "assignment"})
+                        })
+                        let contextCodes = ""
+                        json.forEach((course) => {
+                            contextCodes += `&context_codes[]=course_${course.id}`
+                        })
+                        fetch("/api/v1/announcements?per_page=100&latest_only=true" + contextCodes, {}).then((res) => {
+                            res.json().then((announcements) => {
+                                announcements.forEach((announcement) => {
+                                    qm.items.push({name: announcement.title, url: announcement.html_url, icon:"announcement"})
+                                })
+                                if (!sessionStorage.getItem("qm-itemCache")) {
+                                    sessionStorage.setItem("qm-itemCache", JSON.stringify(qm.items))
+                                }
+                                setupKeybind()
                             })
-                            setupKeybind()
                         })
                     })
                 })
             })
-        })
-    })
+     })
+    }
 })
 
 function waitForElm(selector) {
