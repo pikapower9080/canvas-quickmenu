@@ -170,7 +170,7 @@ qm.actions = [
     {name: "Global Announcements", url: "/account_notifications", icon:"alerts"},
     {name: "ePortfolios", url: "/dashboard/eportfolios", icon:"bank"},
     {name: "Studio", url: "/accounts/1/external_tools/55733?launch_type=global_navigation", icon:"studio"},
-    {name: "New Message", url: "/conversations", icon:'inbox', setStorage: {"inboxNewMessage": true}},
+    {name: "New Message", url: "/conversations", icon:'inbox', setStorage: {"inboxNewMessage": true}, aka: "New Inbox"},
     {name: "New Calendar Event", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true}, aka: "New Event"},
     {name: "New To-Do Item", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true, "newTodo": true}}
 ]
