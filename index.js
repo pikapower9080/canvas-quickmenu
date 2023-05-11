@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Canvas Quick Menu
+// @name         Canvas Quick Menu Testing
 // @namespace    http://tampermonkey.net/
 // @version      0.1
-// @description  Quick Menu for Canvas
+// @description  Version for testing
 // @author       pikapower9080
 // @match        https://hcpss.instructure.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=hcpss.instructure.com
@@ -133,13 +133,23 @@ function setupKeybind() {
             if (item.item["icon"]) {
                 mainText.innerHTML = `<i class="icon-${item.item.icon}" style="margin-right: 5px;"></i>${mainText.innerText}`
             }
+            if (item.item["setStorage"]) {
+                realClone.dataset.setStorage = JSON.stringify(item.item.setStorage)
+            }
             qm.results.appendChild(clone)
         })
     })
     qm.input.addEventListener("keydown", (e) => {
         if (e.key == "Enter" && qm.container.style.display == "unset") {
             e.preventDefault()
-            window.location.href = qm.results.querySelector(".result").dataset.href
+            const result = qm.results.querySelector(".result")
+            let setStorage = JSON.parse(result.dataset.setStorage || "{}")
+            if (setStorage) {
+                for (let k in setStorage) {
+                    sessionStorage.setItem(k, setStorage[k])
+                }
+            }
+            window.location.href = result.dataset.href
         }
     })
     console.log("%cCanvas quick menu is now ready!", "font-size: 16px;")
@@ -148,7 +158,7 @@ function setupKeybind() {
 
 qm.items = []
 qm.actions = [
-    {name: "Inbox", url: "/conversations", icon:"inbox", aka: "New Message"},
+    {name: "Inbox", url: "/conversations", icon:"inbox"},
     {name: "Dashboard", url: "/", icon:"home", aka: "Home"},
     {name: "Calendar", url: "/calendar", icon:"calendar-month"},
     {name: "Grades", url: "/grades", icon:"star-light"},
@@ -157,9 +167,12 @@ qm.actions = [
     {name: "All Courses", url: "/courses", icon:"courses", aka: "Subjects"},
     {name: "Schedule", url: "/#schedule", icon:"calendar-month"},
     {name: "API Documentation", url: "/doc/api/", icon:"code", aka:"Hacker"},
-    {name: "Global Announcments", url: "/account_notifications", icon:"alerts"},
+    {name: "Global Announcements", url: "/account_notifications", icon:"alerts"},
     {name: "ePortfolios", url: "/dashboard/eportfolios", icon:"bank"},
-    {name: "Studio", url: "/accounts/1/external_tools/55733?launch_type=global_navigation", icon:"studio"}
+    {name: "Studio", url: "/accounts/1/external_tools/55733?launch_type=global_navigation", icon:"studio"},
+    {name: "New Message", url: "/conversations", icon:'inbox', setStorage: {"inboxNewMessage": true}},
+    {name: "New Calendar Event", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true}, aka: "New Event"},
+    {name: "New To-Do Item", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true, "newTodo": true}}
 ]
 qm.actions.forEach((action) => {
     qm.items.push(action)
@@ -196,3 +209,41 @@ qm.fuseScript.addEventListener("load", () => {
         })
     })
 })
+
+function waitForElm(selector) {
+    return new Promise(resolve => {
+        if (document.querySelector(selector)) {
+            return resolve(document.querySelector(selector));
+        }
+        const observer = new MutationObserver(mutations => {
+            if (document.querySelector(selector)) {
+                resolve(document.querySelector(selector));
+                observer.disconnect();
+            }
+        });
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    });
+}
+if (sessionStorage.getItem("inboxNewMessage")) {
+    waitForElm("#conversation-actions > .btn").then((element) => {
+        setTimeout(() => {
+            sessionStorage.removeItem("inboxNewMessage")
+            element.click()
+        }, 3000)
+    })
+}
+if (sessionStorage.getItem("calendarNewEvent")) {
+   waitForElm(".header-right-flex.header-bar-right > .btn").then((element) => {
+       setTimeout(() => {
+           sessionStorage.removeItem("calendarNewEvent")
+           element.click();
+           if (sessionStorage.getItem("newTodo")) {
+               sessionStorage.removeItem("newTodo")
+               document.querySelector(".ui-tabs-anchor.edit_planner_note_option").click()
+           }
+       }, 3500);
+   })
+}
