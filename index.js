@@ -136,6 +136,7 @@ function setupKeybind() {
             if (item.item["setStorage"]) {
                 realClone.dataset.setStorage = JSON.stringify(item.item.setStorage)
             }
+            realClone.setAttribute("onclick", "this.location.href = " + `/courses/${item.item.id}`)
             qm.results.appendChild(clone)
         })
     })
