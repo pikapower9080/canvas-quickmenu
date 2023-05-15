@@ -191,7 +191,7 @@ qm.fuseScript.addEventListener("load", () => {
                     let newCourse = course
                     newCourse.icon = "courses"
                     newCourse.name = course.name.trim()
-                    newCourse.aka = course.original_name.trim()
+                    //newCourse.aka = course.original_name.trim()
                     qm.items.push(newCourse)
                 })
                 fetch("https://hcpss.instructure.com/api/v1/users/self/todo?per_page=100", {}).then((res) => {
