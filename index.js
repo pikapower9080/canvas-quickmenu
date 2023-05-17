@@ -13,7 +13,7 @@
 let qm = {}
 
 qm.css = `
-#quick-menu-overlay {
+/*#quick-menu-overlay {
     position: fixed;
     z-index: 1000;
     background-color: rgba(0, 0, 0, 0.5);
@@ -21,7 +21,7 @@ qm.css = `
     height: 100vh;
     top: 0;
     left: 0;
-}
+}*/
 #quick-menu {
     z-index: 1001;
     position: fixed;
@@ -83,7 +83,7 @@ qm.css = `
 `
 
 qm.html = `
-    <div id="quick-menu-overlay"></div>
+    <div id="quick-menu-overlay" class="ui-widget-overlay" style="z-index: 1000; position: fixed;"></div>
     <div id="quick-menu">
         <input type="text" id="quick-menu-input" placeholder="Search Anything..." autocomplete="off">
         <input type="submit" style="display: none;">
