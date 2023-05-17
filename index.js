@@ -61,6 +61,25 @@ qm.css = `
     border-bottom: 1px solid black;
     cursor: pointer;
 }
+#add-shortcut-container label {
+    display: inline-block;
+    width: 110px;
+}
+#add-shortcut-container button {
+    margin-left: 5px;
+}
+#add-shortcut-container button[type="submit"] {
+    margin-left: 0px;
+}
+#add-shortcut-container ul {
+    list-style: none;
+    margin-left: 0;
+    margin-top: 10px;
+}
+#add-shortcut-container ul li {
+    border: 1px gray solid;
+    padding-inline: 3px;
+}
 `
 
 qm.html = `
@@ -78,11 +97,47 @@ qm.html = `
     </div>
 `
 
+if (window.location.href.endsWith("/qm/manage-shortcuts")) {
+    let customShortcuts = JSON.parse(localStorage.getItem("qm-custom")) || []
+    window.removeCustomShortcut = function(shortcutName) {
+        console.log(customShortcuts, shortcutName)
+        delete customShortcuts.splice(customShortcuts.indexOf(customShortcuts.find((x) => {return x.name === shortcutName})), 1)
+        localStorage.setItem("qm-custom", JSON.stringify(customShortcuts))
+        window.location.reload()
+    }
+    let shortcutHTML = ``
+    customShortcuts.forEach((shortcut) => {
+        shortcutHTML += `<li><i class="icon-${shortcut.icon}"></i> ${shortcut.name} <a type="button" style="cursor: pointer; line-decoration: underline; color: gray;" onclick="window.removeCustomShortcut('${shortcut.name}')">[Remove]</a></li>`
+    })
+    document.title = "Manage Shortcuts"
+    document.body.innerHTML = `<section style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%);" id="add-shortcut-container">
+    <h1 style="text-align: center;">Manage Shortcuts</h1>
+    <form id="qm-create-shortcut-form">
+    <label style="margin-right: 10px;">Shortcut Name:</label><input id="name-input" type="text" required><br>
+    <label style="margin-right: 10px;">Shortcut Icon:</label><input id="icon-input" type="text" required><br>
+    <label style="margin-right: 10px;">Shortcut URL:</label><input id="url-input" type="url" required><br>
+    <button type="submit">Add</button><button onclick="window.history.back()" type="button">Cancel</button><a href="https://instructure.design/#iconography" target="_blank"><button type="button">Icon List</button></a><br>
+    <ul id="custom-shortcut-list">
+        ${shortcutHTML}
+    </ul>
+    </form></section>
+    `
+    const form = document.querySelector("#qm-create-shortcut-form")
+    form.addEventListener("submit", (e) => {
+        e.preventDefault()
+        customShortcuts.push({name: form.querySelector("#name-input").value, url: form.querySelector("#url-input").value, icon: form.querySelector("#icon-input").value})
+        localStorage.setItem("qm-custom", JSON.stringify(customShortcuts))
+        sessionStorage.removeItem("qm-itemCache")
+        window.location.reload()
+    })
+}
+
 qm.container = document.createElement("div")
 qm.container.id = "quick-menu-container"
 document.body.appendChild(qm.container)
 qm.container.innerHTML = qm.html
 qm.styles = document.createElement("style")
+qm.styles.id = "qm-styles"
 qm.styles.innerHTML = qm.css
 document.head.appendChild(qm.styles)
 
@@ -173,17 +228,24 @@ qm.actions = [
     {name: "Studio", url: "/accounts/1/external_tools/55733?launch_type=global_navigation", icon:"studio"},
     {name: "New Message", url: "/conversations", icon:'inbox', setStorage: {"inboxNewMessage": true}, aka: "New Inbox"},
     {name: "New Calendar Event", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true}, aka: "New Event"},
-    {name: "New To-Do Item", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true, "newTodo": true}}
+    {name: "New To-Do Item", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true, "newTodo": true}},
+    {name: "Custom Shortcuts", url: "/qm/manage-shortcuts", icon: "add", aka: ["Create Shortcut"]}
 ]
 qm.actions.forEach((action) => {
     qm.items.push(action)
 })
+const customItems = JSON.parse(localStorage.getItem("qm-custom"))
+if (customItems) {
+    customItems.forEach((item) => {
+        qm.items.push(item)
+    })
+}
 
 qm.fuseScript.addEventListener("load", () => {
     if (sessionStorage.getItem("qm-itemCache")) {
-        qm.items = JSON.parse(sessionStorage.getItem("qm-itemCache"));
-        console.log("Loaded quick search item cache from session storage");
-        setupKeybind();
+        qm.items = JSON.parse(sessionStorage.getItem("qm-itemCache"))
+        console.log("Loaded quick search item cache from session storage")
+        setupKeybind()
     } else {
         fetch("https://hcpss.instructure.com/api/v1/users/self/favorites/courses?include[]=banner_image", {}).then((res) => {
             res.json().then((json) => {
@@ -224,19 +286,19 @@ qm.fuseScript.addEventListener("load", () => {
 function waitForElm(selector) {
     return new Promise(resolve => {
         if (document.querySelector(selector)) {
-            return resolve(document.querySelector(selector));
+            return resolve(document.querySelector(selector))
         }
         const observer = new MutationObserver(mutations => {
             if (document.querySelector(selector)) {
-                resolve(document.querySelector(selector));
-                observer.disconnect();
+                resolve(document.querySelector(selector))
+                observer.disconnect()
             }
-        });
+        })
         observer.observe(document.body, {
             childList: true,
             subtree: true
-        });
-    });
+        })
+    })
 }
 if (sessionStorage.getItem("inboxNewMessage")) {
     waitForElm("#conversation-actions > .btn").then((element) => {
@@ -250,11 +312,11 @@ if (sessionStorage.getItem("calendarNewEvent")) {
    waitForElm(".header-right-flex.header-bar-right > .btn").then((element) => {
        setTimeout(() => {
            sessionStorage.removeItem("calendarNewEvent")
-           element.click();
+           element.click()
            if (sessionStorage.getItem("newTodo")) {
                sessionStorage.removeItem("newTodo")
                document.querySelector(".ui-tabs-anchor.edit_planner_note_option").click()
            }
-       }, 3500);
+       }, 3500)
    })
 }
