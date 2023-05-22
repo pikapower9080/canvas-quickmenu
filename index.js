@@ -205,7 +205,11 @@ function setupKeybind() {
                     sessionStorage.setItem(k, setStorage[k])
                 }
             }
-            window.location.href = result.dataset.href
+            if (!e.ctrlKey) {
+                window.location.href = result.dataset.href
+            } else {
+                window.open(result.dataset.href, "_blank")
+            }
         }
     })
     console.log("%cCanvas quick menu is now ready!", "font-size: 16px;")
