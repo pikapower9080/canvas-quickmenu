@@ -4,8 +4,8 @@
 // @version      0.1
 // @description  Version for testing
 // @author       pikapower9080
-// @match        https://hcpss.instructure.com/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=hcpss.instructure.com
+// @match        https://*.instructure.com/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=canvas.instructure.com
 // @grant        none
 // @noframes
 // ==/UserScript==
@@ -253,7 +253,7 @@ qm.fuseScript.addEventListener("load", () => {
         console.log("Loaded quick search item cache from session storage")
         setupKeybind()
     } else {
-        fetch("https://hcpss.instructure.com/api/v1/users/self/favorites/courses?include[]=banner_image", {}).then((res) => {
+        fetch("/api/v1/users/self/favorites/courses?include[]=banner_image", {}).then((res) => {
             res.json().then((json) => {
                 json.forEach((course) => {
                     let newCourse = course
@@ -262,7 +262,7 @@ qm.fuseScript.addEventListener("load", () => {
                     newCourse.aka = course.course_code.trim()
                     qm.items.push(newCourse)
                 })
-                fetch("https://hcpss.instructure.com/api/v1/users/self/todo?per_page=100", {}).then((res) => {
+                fetch("/api/v1/users/self/todo?per_page=100", {}).then((res) => {
                     res.json().then((todo) => {
                         todo.forEach((assignment) => {
                             qm.items.push({name: assignment.assignment.name, url: assignment.assignment.html_url, icon: assignment.assignment.is_quiz_assignment? "quiz" : "assignment"})
