@@ -1,11 +1,11 @@
 // ==UserScript==
 // @name         Canvas Quick Menu
-// @namespace    http://tampermonkey.net/
+// @namespace    http://pikarocks.dev/
 // @version      0.1
 // @description  Quick Menu for Canvas
 // @author       pikapower9080
-// @match        https://hcpss.instructure.com/*
-// @icon         https://www.google.com/s2/favicons?sz=64&domain=hcpss.instructure.com
+// @match        https://*.instructure.com/*
+// @icon         https://www.google.com/s2/favicons?sz=64&domain=canvas.instructure.com
 // @grant        none
 // @noframes
 // ==/UserScript==
