@@ -28,7 +28,7 @@ Type "Custom Shortcuts" into the menu to open up the custom shortcuts menu. Add 
 **A:** This is an unavoidable chrome feature, pressing escape while a page is loading does the equivalent of pressing the X icon that the reload button turns into which causes errors. Wait until the page is fully loaded before pressing escape.
 
 **Q:** My assignments won't show up!
-**A:** Canvas quick search only shows upcoming assignments and won't show assignments that are far into the future or already completed.
+**A:** Canvas quick search only shows upcoming assignments and won't show assignments that are far into the future or already submitted.
 
 **Q:** Nothing works!
 **A:** If your school's canvas website doesn't end in `.instructure.com` then change the text at the top of the code where it says `@match` to show your school's canvas url like so:
