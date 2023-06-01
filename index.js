@@ -228,7 +228,6 @@ qm.actions = [
     {name: "Files", url: "/files", icon:"folder"},
     {name: "All Courses", url: "/courses", icon:"courses", aka: "Subjects"},
     {name: "Schedule", url: "/#schedule", icon:"calendar-month"},
-    {name: "API Documentation", url: "/doc/api/", icon:"code", aka:"Hacker"},
     {name: "Global Announcements", url: "/account_notifications", icon:"alerts"},
     {name: "ePortfolios", url: "/dashboard/eportfolios", icon:"bank"},
     {name: "Studio", url: "/accounts/1/external_tools/55733?launch_type=global_navigation", icon:"studio"},
