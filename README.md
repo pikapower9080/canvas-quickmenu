@@ -6,10 +6,13 @@ Canvas quick menu is a userscript for Instructure Canvas that adds a menu for qu
 - ⚡ Instant search results
 - ⌨ Quick access anywhere with one key
 - ➕ Add your own custom shortcuts to course specific resources or anything else
-- ⭐ Quick actions for new messages, calendar events, and more
+- ⭐ Quick actions for new messages, calendar events, and 
+- 🖼️ Replace course card images and banners with your own images (not supported by all schools)
 
 ## Usage
 You can press <kbd>Esc</kbd> to toggle the menu, but you can also use <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>P</kbd>. If it's not opening, check to see if there are any embedded webpages on the page and make sure they don't have focus by clicking somewhere on the main page. Once the menu is open, search anything and press enter to navigate to the top result. Pressing <kbd>Ctrl</kbd> + <kbd>Enter</kbd> will open the top reuslt in a new tab. If you want to open something that's not the top result, you can just click it.
+
+To replace a course card or banner image, right click the image and paste your new image url. If you find the image somewhere online (google images, etc) you can right click the image and select "Copy image address" and use that.
 
 ### Custom Shortcuts
 Type "Custom Shortcuts" into the menu to open up the custom shortcuts menu. Add your own shortcut using the form. For icons, click the <kbd>Icon List</kbd> button at the bottom to open up a list of icons, then type the name of the icon in the box.
