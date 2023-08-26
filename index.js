@@ -80,6 +80,9 @@ qm.css = `
     border: 1px gray solid;
     padding-inline: 3px;
 }
+#card-edit-dialog::backdrop {
+    background: rgba(45,59,69,.75);
+}
 `
 
 qm.html = `
@@ -140,6 +143,9 @@ qm.styles = document.createElement("style")
 qm.styles.id = "qm-styles"
 qm.styles.innerHTML = qm.css
 document.head.appendChild(qm.styles)
+qm.editDialog = document.createElement("dialog")
+qm.editDialog.id = "card-edit-dialog"
+document.body.appendChild(qm.editDialog)
 
 qm.container.style.display = "none"
 
@@ -162,6 +168,7 @@ function setupKeybind() {
         threshold: 0.4
     })
     addEventListener("keydown", (e) => {
+        if (qm.editDialog.open) return
         if ((e.key == "P" && e.ctrlKey) || (e.key == "Escape" && qm.container.style.display == "none")) {
             e.preventDefault()
             qm.container.style.display = "unset"
@@ -234,7 +241,7 @@ qm.actions = [
     {name: "New Message", url: "/conversations", icon:'inbox', setStorage: {"inboxNewMessage": true}, aka: "New Inbox"},
     {name: "New Calendar Event", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true}, aka: "New Event"},
     {name: "New To-Do Item", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true, "newTodo": true}},
-    {name: "Custom Shortcuts", url: "/qm/manage-shortcuts", icon: "add", aka: ["Create Shortcut"]}
+    {name: "Custom Shortcuts", url: "/qm/manage-shortcuts", icon: "add", aka: ["Create Shortcut"]} 
 ]
 qm.actions.forEach((action) => {
     qm.items.push(action)
@@ -325,3 +332,88 @@ if (sessionStorage.getItem("calendarNewEvent")) {
        }, 3500)
    })
 }
+
+waitForElm(".ic-DashboardCard div[data-testid='k5-dashboard-card-hero']").then(() => {
+    document.querySelectorAll(".ic-DashboardCard div[data-testid='k5-dashboard-card-hero']").forEach((cardImg) => {
+        const course = cardImg.parentNode.querySelector(".fOyUs_bGBk > h3 > a").href.split("/")[4]
+        let saved = JSON.parse(localStorage.getItem("qm-cards")) || {}
+        cardImg.addEventListener("contextmenu", (e) => {
+            e.preventDefault()
+            qm.editDialog.innerHTML = `
+            <h2 style="display: block; text-align: center;">Edit Card</h2>
+            <img style="width: 300px;" src="${cardImg.style.backgroundImage.replace('url("', '').replace('")', '')}">
+            <br><br><label>New Image Url: </label>
+            <form>
+                <input id="card-edit-input" type="url" required value="${saved[course] || ""}">
+                <br>
+                <button type="submit">Done</button>
+                <button class="cancel" type="button">Cancel</button>
+                <button class="revert" type="button">Revert</button>
+            </form>
+            `
+            qm.editDialog.showModal()
+            const form = qm.editDialog.querySelector("form")
+            form.addEventListener("submit", (e) => {
+                e.preventDefault()
+                console.log(course)
+                let saved = JSON.parse(localStorage.getItem("qm-cards")) || {}
+                saved[course] = form.querySelector("input").value
+                localStorage.setItem("qm-cards", JSON.stringify(saved))
+                qm.editDialog.close()
+                cardImg.style.backgroundImage = `url("${saved[course]}")`
+            })
+            form.querySelector("button.cancel").addEventListener("click", () => {qm.editDialog.close()})
+            form.querySelector("button.revert").addEventListener("click", () => {
+                let saved = JSON.parse(localStorage.getItem("qm-cards")) || {}
+                delete saved[course]
+                localStorage.setItem("qm-cards", JSON.stringify(saved))
+                qm.editDialog.close()
+                window.location.reload()
+            })
+        })
+        if (saved[course]) {
+            cardImg.style.backgroundImage = `url("${saved[course]}")`
+        }
+    })
+})
+
+waitForElm("#k5-course-header-hero").then((header) => {
+    const course = window.location.href.split("/")[4].split("#")[0]
+    let saved = JSON.parse(localStorage.getItem("qm-banners")) || {}
+    header.addEventListener("contextmenu", (e) => {
+        e.preventDefault()
+        saved = JSON.parse(localStorage.getItem("qm-banners")) || {}
+        qm.editDialog.innerHTML = `
+        <h2 style="display: block; text-align: center;">Edit Banner</h2>
+        <img style="width: 300px;" src="${header.style.backgroundImage.replace('url("', '').replace('")', '')}">
+        <br><br><label>New Image Url: </label>
+        <form>
+            <input id="card-edit-input" type="url" required value="${saved[course] || ""}">
+            <br>
+            <button type="submit">Done</button>
+            <button class="cancel" type="button">Cancel</button>
+            <button class="revert" type="button">Revert</button>
+        </form>
+        `
+        const form = qm.editDialog.querySelector("form")
+        form.addEventListener("submit", (e) => {
+            e.preventDefault()
+            saved[course] = form.querySelector("input").value
+            localStorage.setItem("qm-banners", JSON.stringify(saved))
+            qm.editDialog.close()
+            header.style.backgroundImage = `url("${saved[course]}")`
+        })
+        qm.editDialog.showModal()
+        form.querySelector("button.cancel").addEventListener("click", () => {qm.editDialog.close()})
+        form.querySelector("button.revert").addEventListener("click", () => {
+            saved = JSON.parse(localStorage.getItem("qm-banners")) || {}
+            delete saved[course]
+            localStorage.setItem("qm-banners", JSON.stringify(saved))
+            qm.editDialog.close()
+            window.location.reload()
+        })
+    })
+    if (saved[course]) {
+        header.style.backgroundImage = `url("${saved[course]}")`
+    }
+})
