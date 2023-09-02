@@ -7,6 +7,7 @@
 // @match        https://*.instructure.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=canvas.instructure.com
 // @grant        none
+// @source       https://github.com/pikapower9080/canvas-quickmenu
 // @noframes
 // ==/UserScript==
 
@@ -106,7 +107,9 @@ if (window.location.href.endsWith("/qm/manage-shortcuts")) {
         console.log(customShortcuts, shortcutName)
         delete customShortcuts.splice(customShortcuts.indexOf(customShortcuts.find((x) => {return x.name === shortcutName})), 1)
         localStorage.setItem("qm-custom", JSON.stringify(customShortcuts))
-        window.location.reload()
+        qm.setSyncData().then(() => {
+            window.location.reload()
+        })
     }
     let shortcutHTML = ``
     customShortcuts.forEach((shortcut) => {
@@ -117,8 +120,8 @@ if (window.location.href.endsWith("/qm/manage-shortcuts")) {
     <h1 style="text-align: center;">Manage Shortcuts</h1>
     <form id="qm-create-shortcut-form">
     <label style="margin-right: 10px;">Shortcut Name:</label><input id="name-input" type="text" required><br>
-    <label style="margin-right: 10px;">Shortcut Icon:</label><input id="icon-input" type="text" required><br>
-    <label style="margin-right: 10px;">Shortcut URL:</label><input id="url-input" type="url" required><br>
+    <label style="margin-right: 10px;">Shortcut Icon:</label><input id="icon-input" type="text" required placeholder="document"><br>
+    <label style="margin-right: 10px;">Shortcut URL:</label><input id="url-input" type="url" required placeholder="https://example.com/"><br>
     <button type="submit">Add</button><button onclick="window.history.back()" type="button">Cancel</button><a href="https://instructure.design/#iconography" target="_blank"><button type="button">Icon List</button></a><br>
     <ul id="custom-shortcut-list">
         ${shortcutHTML}
@@ -128,11 +131,34 @@ if (window.location.href.endsWith("/qm/manage-shortcuts")) {
     const form = document.querySelector("#qm-create-shortcut-form")
     form.addEventListener("submit", (e) => {
         e.preventDefault()
+        form.querySelector("button[type='submit']").disabled = true
         customShortcuts.push({name: form.querySelector("#name-input").value, url: form.querySelector("#url-input").value, icon: form.querySelector("#icon-input").value})
         localStorage.setItem("qm-custom", JSON.stringify(customShortcuts))
         sessionStorage.removeItem("qm-itemCache")
-        window.location.reload()
+        qm.setSyncData().then(() => {
+            window.location.reload()
+        })
     })
+}
+if (window.location.href.endsWith("/qm/reset-data")) {
+    document.title = "Delete User Data"
+    window.deleteData = async () => {
+        for (let key in localStorage) {
+            if (key.startsWith("qm-")) {
+                localStorage.removeItem(key)
+            }
+        }
+        sessionStorage.removeItem("qm-itemCache")
+        document.querySelector("button").disabled = true
+        document.querySelector("button.cancel").disabled = true
+        await qm.setSyncData()
+        window.location.href = "/"
+    }
+    document.body.innerHTML = `<section style="position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); max-width: 400px;" id="add-shortcut-container">
+    <h1 style="text-align: center;">Confirm Data Deletion</h1>
+    <p>Are you sure you want to delete your canvas quick menu data? It will be removed from all devices. This cannot be undone.</p><br>
+    <button onclick="window.deleteData()">Do It</button><button onclick="window.history.back()" class="cancel">Cancel</button>
+    </section>`
 }
 
 qm.container = document.createElement("div")
@@ -237,11 +263,13 @@ qm.actions = [
     {name: "Schedule", url: "/#schedule", icon:"calendar-month"},
     {name: "Global Announcements", url: "/account_notifications", icon:"alerts"},
     {name: "ePortfolios", url: "/dashboard/eportfolios", icon:"bank"},
-    {name: "Studio", url: "/accounts/1/external_tools/55733?launch_type=global_navigation", icon:"studio"},
     {name: "New Message", url: "/conversations", icon:'inbox', setStorage: {"inboxNewMessage": true}, aka: "New Inbox"},
     {name: "New Calendar Event", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true}, aka: "New Event"},
     {name: "New To-Do Item", url: "/calendar", icon:"calendar-add", setStorage: {"calendarNewEvent": true, "newTodo": true}},
-    {name: "Custom Shortcuts", url: "/qm/manage-shortcuts", icon: "add", aka: ["Create Shortcut"]} 
+    {name: "Custom Shortcuts", url: "/qm/manage-shortcuts", icon: "add", aka: ["Create Shortcut"]},
+    {name: "Reset Data", "url": "/qm/reset-data", icon: "trash", aka: ["Delete"]},
+    {name: "New Google Docs", "url": "https://docs.new/", icon: "plus"},
+    {name: "New Google Slides", "url": "https://slides.new/", icon: "plus"}
 ]
 qm.actions.forEach((action) => {
     qm.items.push(action)
@@ -313,11 +341,11 @@ function waitForElm(selector) {
     })
 }
 if (sessionStorage.getItem("inboxNewMessage")) {
-    waitForElm("#conversation-actions > .btn").then((element) => {
+    waitForElm("#content > div:nth-child(2) > div > span:nth-child(1) > div > div > span > span:nth-child(4) > span > span.fOyUs_bGBk.dJCgj_bGBk.dJCgj_zczv > span > span > button").then((element) => {
         setTimeout(() => {
             sessionStorage.removeItem("inboxNewMessage")
             element.click()
-        }, 3000)
+        }, 500)
     })
 }
 if (sessionStorage.getItem("calendarNewEvent")) {
@@ -329,11 +357,11 @@ if (sessionStorage.getItem("calendarNewEvent")) {
                sessionStorage.removeItem("newTodo")
                document.querySelector(".ui-tabs-anchor.edit_planner_note_option").click()
            }
-       }, 3500)
+       }, 500)
    })
 }
 
-waitForElm(".ic-DashboardCard div[data-testid='k5-dashboard-card-hero']").then(() => {
+qm.updateCourseCards = function() {
     document.querySelectorAll(".ic-DashboardCard div[data-testid='k5-dashboard-card-hero']").forEach((cardImg) => {
         const course = cardImg.parentNode.querySelector(".fOyUs_bGBk > h3 > a").href.split("/")[4]
         let saved = JSON.parse(localStorage.getItem("qm-cards")) || {}
@@ -359,6 +387,7 @@ waitForElm(".ic-DashboardCard div[data-testid='k5-dashboard-card-hero']").then((
                 let saved = JSON.parse(localStorage.getItem("qm-cards")) || {}
                 saved[course] = form.querySelector("input").value
                 localStorage.setItem("qm-cards", JSON.stringify(saved))
+                qm.setSyncData()
                 qm.editDialog.close()
                 cardImg.style.backgroundImage = `url("${saved[course]}")`
             })
@@ -367,15 +396,18 @@ waitForElm(".ic-DashboardCard div[data-testid='k5-dashboard-card-hero']").then((
                 let saved = JSON.parse(localStorage.getItem("qm-cards")) || {}
                 delete saved[course]
                 localStorage.setItem("qm-cards", JSON.stringify(saved))
+                qm.setSyncData().then(() => {
+                    window.location.reload()
+                })
                 qm.editDialog.close()
-                window.location.reload()
             })
         })
         if (saved[course]) {
             cardImg.style.backgroundImage = `url("${saved[course]}")`
         }
     })
-})
+}
+waitForElm(".ic-DashboardCard div[data-testid='k5-dashboard-card-hero']").then(qm.updateCourseCards)
 
 waitForElm("#k5-course-header-hero").then((header) => {
     const course = window.location.href.split("/")[4].split("#")[0]
@@ -400,6 +432,7 @@ waitForElm("#k5-course-header-hero").then((header) => {
             e.preventDefault()
             saved[course] = form.querySelector("input").value
             localStorage.setItem("qm-banners", JSON.stringify(saved))
+            qm.setSyncData()
             qm.editDialog.close()
             header.style.backgroundImage = `url("${saved[course]}")`
         })
@@ -409,11 +442,54 @@ waitForElm("#k5-course-header-hero").then((header) => {
             saved = JSON.parse(localStorage.getItem("qm-banners")) || {}
             delete saved[course]
             localStorage.setItem("qm-banners", JSON.stringify(saved))
+            qm.setSyncData().then(() => {
+                window.location.reload()
+            })
             qm.editDialog.close()
-            window.location.reload()
         })
     })
     if (saved[course]) {
         header.style.backgroundImage = `url("${saved[course]}")`
     }
 })
+
+qm.firebaseScript = document.createElement("script")
+qm.firebaseScript.type = "module"
+qm.firebaseScript.innerHTML = `
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-app.js";
+  import { getDoc, setDoc, getFirestore, doc } from "https://www.gstatic.com/firebasejs/10.3.1/firebase-firestore.js"
+  // https://firebase.google.com/docs/web/setup#available-libraries
+  const firebaseConfig = {
+    apiKey: "AIzaSyCXTdYwyN0ufB6sGJbkT3i53vBJr-5fdT8",
+    authDomain: "canvas-quick-menu.firebaseapp.com",
+    projectId: "canvas-quick-menu",
+    storageBucket: "canvas-quick-menu.appspot.com",
+    messagingSenderId: "859220193569",
+    appId: "1:859220193569:web:6fe7bb4ff53c91556f8e60"
+  };
+  window.firebase = initializeApp(firebaseConfig);
+  const db = getFirestore(window.firebase)
+  window.firebaseLoaded(window.firebase, getDoc, setDoc, db, doc)
+`
+document.head.appendChild(qm.firebaseScript)
+window.firebaseLoaded = async (firebase, getDoc, setDoc, db, doc) => {
+    console.log("Firebase loaded")
+    const accountRes = await fetch("/api/v1/users/self")
+    const account = await accountRes.json()
+    const docRef = await doc(db, 'shortcuts', encodeURIComponent(account.id + account.created_at + account.name))
+    const imagesRef = await doc(db, 'images', encodeURIComponent(account.id + account.created_at + account.name))
+    qm.setSyncData = async () => {
+        await setDoc(docRef, {value: JSON.parse(localStorage.getItem("qm-custom") || "[]") || []})
+        await setDoc(imagesRef, {banners: JSON.parse(localStorage.getItem("qm-banners") || "{}") || {}, cards: JSON.parse(localStorage.getItem("qm-cards") || "{}") || {}})
+    }
+    const shortcutsSnap = await getDoc(docRef)
+    if (shortcutsSnap.exists()) {
+        localStorage.setItem("qm-custom", JSON.stringify(shortcutsSnap.data().value))
+    }
+    const imagesSnap = await getDoc(imagesRef)
+    if (imagesSnap.exists()) {
+        localStorage.setItem("qm-banners", JSON.stringify(imagesSnap.data().banners))
+        localStorage.setItem("qm-cards", JSON.stringify(imagesSnap.data().cards))
+        qm.updateCourseCards()
+    }
+}
