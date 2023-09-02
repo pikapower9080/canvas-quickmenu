@@ -5,6 +5,7 @@ Canvas quick menu is a userscript for Instructure Canvas that adds a menu for qu
 - 📚 Search courses, upcoming assignments, canvas pages, announcements, and more
 - ⚡ Instant search results
 - ⌨ Quick access anywhere with one key
+- 🔁 Sync your setup across devices with no setup
 - ➕ Add your own custom shortcuts to course specific resources or anything else
 - ⭐ Quick actions for new messages, calendar events, and 
 - 🖼️ Replace course card images and banners with your own images (not supported by all schools)
