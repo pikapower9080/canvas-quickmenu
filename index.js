@@ -53,7 +53,7 @@ qm.css = `
     border-bottom: none;
     width: calc(300px + 8px);
 }
-#quick-menu #results:last-child {
+#quick-menu .results:last-child {
     border-bottom-left-radius: 5px;
     border-bottom-right-radius: 5px;
 }
