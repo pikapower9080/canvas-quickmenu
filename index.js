@@ -363,7 +363,7 @@ if (sessionStorage.getItem("calendarNewEvent")) {
 
 qm.updateCourseCards = function() {
     document.querySelectorAll(".ic-DashboardCard div[data-testid='k5-dashboard-card-hero']").forEach((cardImg) => {
-        const course = cardImg.parentNode.querySelector(".fOyUs_bGBk > h3 > a").href.split("/")[4]
+        const course = cardImg.parentNode.querySelector("a[dir='ltr']").href.split("/")[4]
         let saved = JSON.parse(localStorage.getItem("qm-cards")) || {}
         cardImg.addEventListener("contextmenu", (e) => {
             e.preventDefault()
