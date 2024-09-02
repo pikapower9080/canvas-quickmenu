@@ -7,6 +7,7 @@
 // @match        https://*.instructure.com/*
 // @icon         https://www.google.com/s2/favicons?sz=64&domain=canvas.instructure.com
 // @grant        GM_xmlhttpRequest
+// @connect      gist.githubusercontent.com
 // @noframes
 // ==/UserScript==
 
